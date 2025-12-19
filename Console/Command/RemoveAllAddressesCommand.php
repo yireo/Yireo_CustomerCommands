@@ -6,6 +6,7 @@ namespace Yireo\CustomerCommands\Console\Command;
 use Magento\Customer\Api\AddressRepositoryInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\App\State;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -17,6 +18,7 @@ class RemoveAllAddressesCommand extends Command
         private CustomerRepositoryInterface $customerRepository,
         private AddressRepositoryInterface $addressRepository,
         private SearchCriteriaBuilder $searchCriteriaBuilder,
+        private readonly State $state,
         string $name = null
     ) {
         parent::__construct($name);
@@ -49,6 +51,8 @@ class RemoveAllAddressesCommand extends Command
         if ($customerId > 0) {
             $customer = $this->customerRepository->getById($customerId);
         }
+
+        $this->state->setAreaCode('frontend');
 
         if (!empty($customerEmail)) {
             $customer = $this->customerRepository->get($customerEmail);

@@ -6,12 +6,12 @@ namespace Yireo\CustomerCommands\Console\Command;
 use Magento\Customer\Api\AddressRepositoryInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Api\Data\AddressInterfaceFactory;
-use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\App\State;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Magento\Directory\Model\ResourceModel\Region\CollectionFactory as RegionCollectionFactory;
 
 class AddAddressCommand extends Command
 {
@@ -19,6 +19,8 @@ class AddAddressCommand extends Command
         private readonly CustomerRepositoryInterface $customerRepository,
         private readonly AddressRepositoryInterface $addressRepository,
         private readonly AddressInterfaceFactory $addressFactory,
+        private readonly RegionCollectionFactory $regionCollectionFactory,
+        private readonly State $state,
         string $name = null
     ) {
         parent::__construct($name);
@@ -39,6 +41,8 @@ class AddAddressCommand extends Command
         $this->addOption('country', null, InputOption::VALUE_OPTIONAL, 'Country ID');
         $this->addOption('telephone', null, InputOption::VALUE_OPTIONAL, 'Telephone');
         $this->addOption('company', null, InputOption::VALUE_OPTIONAL, 'Company');
+        $this->addOption('default-billing', null, InputOption::VALUE_OPTIONAL, 'Default Billing');
+        $this->addOption('default-shipping', null, InputOption::VALUE_OPTIONAL, 'Default Shipping');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -64,6 +68,8 @@ class AddAddressCommand extends Command
             return Command::FAILURE;
         }
 
+        $this->state->setAreaCode('frontend');
+
         try {
             $address = $this->addressFactory->create();
             $address->setCustomerId($customer->getId());
@@ -72,10 +78,27 @@ class AddAddressCommand extends Command
             $address->setStreet([$input->getOption('street')]);
             $address->setCity($input->getOption('city'));
             $address->setPostcode($input->getOption('postcode'));
-            $address->setRegion($input->getOption('region'));
             $address->setCountryId($input->getOption('country'));
             $address->setTelephone($input->getOption('telephone'));
             $address->setCompany($input->getOption('company'));
+
+            $region = $input->getOption('region');
+            if (is_numeric($region)) {
+                $address->setRegionId($region);
+            } else {
+                $regionId = $this->getRegionId($input->getOption('country'), $region);
+                if ($regionId > 0) {
+                    $address->setRegionId($regionId);
+                }
+            }
+
+            if ($input->hasOption('default-shipping')) {
+                $address->setIsDefaultShipping(true);
+            }
+
+            if ($input->hasOption('default-billing')) {
+                $address->setIsDefaultBilling(true);
+            }
 
             $savedAddress = $this->addressRepository->save($address);
             $output->writeln(sprintf(
@@ -90,5 +113,15 @@ class AddAddressCommand extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    private function getRegionId(string $countryId, string $regionName): int
+    {
+        $regionCollection = $this->regionCollectionFactory->create();
+        $regionCollection->addFieldToFilter('country_id', ['eq' => $countryId]);
+        $regionCollection->addFieldToFilter('default_name', ['eq' => $regionName]);
+        $regionId = (int)$regionCollection->getFirstItem()->getId();
+
+        return $regionId;
     }
 }
