@@ -42,7 +42,7 @@ class ListAddressesCommand extends Command
     {
         $customerId = $input->getOption('customer_id');
         $customerEmail = $input->getOption('customer_email');
-        if (empty($customerId) && $customerEmail) {
+        if (empty($customerId) && empty($customerEmail)) {
             $output->writeln('<error>Please supply either customer ID or email</error>');
             return Command::FAILURE;
         }
