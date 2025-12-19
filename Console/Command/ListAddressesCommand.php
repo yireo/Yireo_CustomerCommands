@@ -61,7 +61,6 @@ class ListAddressesCommand extends Command
             return Command::FAILURE;
         }
 
-
         $this->searchCriteriaBuilder->addFilter('parent_id', $customer->getId());
         $searchCriteria = $this->searchCriteriaBuilder->create();
         $addresses = $this->addressRepository->getList($searchCriteria)->getItems();

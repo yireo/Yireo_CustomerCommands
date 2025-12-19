@@ -6,6 +6,7 @@
                 <item name="customer_address_list" xsi:type="object">Yireo\CustomerCommands\Console\Command\ListAddressesCommand</item>
                 <item name="customer_address_remove" xsi:type="object">Yireo\CustomerCommands\Console\Command\RemoveAddressCommand</item>
                 <item name="customer_address_remove_all" xsi:type="object">Yireo\CustomerCommands\Console\Command\RemoveAllAddressesCommand</item>
+                <item name="customer_address_add" xsi:type="object">Yireo\CustomerCommands\Console\Command\AddAddressCommand</item>
             </argument>
         </arguments>
     </type>
