@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 08 April 2026
+### Fixed
+- PHP 8.4 compat
+
 ## [1.0.0] - 07 January 2026
 ### Fixed
 - Finalize commands
