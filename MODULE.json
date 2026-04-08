@@ -1,0 +1,13 @@
+{
+    "sequence": [
+        "Magento_Customer"
+    ],
+    "modules": [
+        "Magento_Customer",
+        "Magento_Directory",
+        "Magento_Eav"
+    ],
+    "components": [],
+    "config": [],
+    "tests": []
+}
