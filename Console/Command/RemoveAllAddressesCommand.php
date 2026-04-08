@@ -19,7 +19,7 @@ class RemoveAllAddressesCommand extends Command
         private AddressRepositoryInterface $addressRepository,
         private SearchCriteriaBuilder $searchCriteriaBuilder,
         private readonly State $state,
-        string $name = null
+        ?string $name = null
     ) {
         parent::__construct($name);
     }

@@ -23,7 +23,7 @@ class RemoveAddressCommand extends Command
      */
     public function __construct(
         AddressRepositoryInterface $addressRepository,
-        string $name = null
+        ?string $name = null
     ) {
         parent::__construct($name);
         $this->addressRepository = $addressRepository;

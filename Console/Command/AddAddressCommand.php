@@ -21,7 +21,7 @@ class AddAddressCommand extends Command
         private readonly AddressInterfaceFactory $addressFactory,
         private readonly RegionCollectionFactory $regionCollectionFactory,
         private readonly State $state,
-        string $name = null
+        ?string $name = null
     ) {
         parent::__construct($name);
     }

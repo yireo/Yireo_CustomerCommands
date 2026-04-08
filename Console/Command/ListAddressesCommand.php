@@ -19,7 +19,7 @@ class ListAddressesCommand extends Command
         private CustomerRepositoryInterface $customerRepository,
         private AddressRepositoryInterface $addressRepository,
         private SearchCriteriaBuilder $searchCriteriaBuilder,
-        string $name = null
+        ?string $name = null
     ) {
         parent::__construct($name);
     }
