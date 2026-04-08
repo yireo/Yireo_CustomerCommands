@@ -1,15 +1,15 @@
 {
     "sequence": [
-        "Magento_Customer"
+        "Magento_Customer",
+        "Magento_Directory"
     ],
     "modules": [
         "Magento_Customer",
         "Magento_Directory",
-        "Magento_Eav"
+        "Magento_Eav",
+        "Magento_Store"
     ],
     "components": [],
     "config": [],
-    "tests": [],
-    "phpcs_severity": "7",
-    "phpstan_level": "6"
+    "tests": []
 }
