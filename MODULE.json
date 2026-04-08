@@ -9,5 +9,7 @@
     ],
     "components": [],
     "config": [],
-    "tests": []
+    "tests": [],
+    "phpcs_severity": "7",
+    "phpstan_level": "6"
 }
