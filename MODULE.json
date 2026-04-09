@@ -1,6 +1,18 @@
 {
-    "module_name": "Yireo_CustomerCommands",
-    "composer_name": "yireo/magento2-customer-commands",
+    "module_name": [
+        "Yireo_CustomerCommands",
+        "Yireo_CustomerCommands",
+        "Yireo_CustomerCommands",
+        "Yireo_CustomerCommands",
+        "Yireo_CustomerCommands"
+    ],
+    "composer_name": [
+        "yireo\/magento2-customer-commands",
+        "yireo\/magento2-customer-commands",
+        "yireo\/magento2-customer-commands",
+        "yireo\/magento2-customer-commands",
+        "yireo\/magento2-customer-commands"
+    ],
     "php_versions": [
         "8.3",
         "8.4"
@@ -11,9 +23,33 @@
     ],
     "sequence": [
         "Magento_Customer",
+        "Magento_Directory",
+        "Magento_Customer",
+        "Magento_Directory",
+        "Magento_Customer",
+        "Magento_Directory",
+        "Magento_Customer",
+        "Magento_Directory",
+        "Magento_Customer",
         "Magento_Directory"
     ],
     "modules": [
+        "Magento_Customer",
+        "Magento_Directory",
+        "Magento_Eav",
+        "Magento_Store",
+        "Magento_Customer",
+        "Magento_Directory",
+        "Magento_Eav",
+        "Magento_Store",
+        "Magento_Customer",
+        "Magento_Directory",
+        "Magento_Eav",
+        "Magento_Store",
+        "Magento_Customer",
+        "Magento_Directory",
+        "Magento_Eav",
+        "Magento_Store",
         "Magento_Customer",
         "Magento_Directory",
         "Magento_Eav",

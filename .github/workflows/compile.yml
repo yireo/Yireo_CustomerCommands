@@ -14,11 +14,18 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v4
 
+      - name: Testing for MODULE.json file
+        run: |
+          test -f MODULE.json || exit 0
+
       - name: Check Magento version
         run: |
-          source ${GITHUB_WORKSPACE}/.module.ini
-          grep -q SKIP_MAGENTO_VERSIONS .module.ini && [[ " ${SKIP_MAGENTO_VERSIONS[*]} " == *" ${{ matrix.magento_version }} "* ]] && exit 0
-          test -f MODULE.json && jq -e --arg v "${{ matrix.magento_version }}" '.skip_magento[] == $v' MODULE.json && exit 0
+          jq -e --arg v "${{ matrix.magento_version }}" '.skip_magento_versions[] == $v' MODULE.json && exit 0
+
+      - name: Setting up module variables
+        run: |
+          echo COMPOSER_NAME=`jq -e '.name' composer.json -r` >> $GITHUB_ENV
+          echo MAGENTO_MODULE=`jq -e '.module_name' MODULE.json -r` >> $GITHUB_ENV
 
       - name: Configure Yireo GitLab
         run: |
@@ -34,7 +41,6 @@ jobs:
 
       - name: Add module source
         run: |
-          COMPOSER_NAME=$(grep '^COMPOSER_NAME=' .module.ini | cut -d= -f2- | tr -d '"')
           cp -R ${GITHUB_WORKSPACE} /tmp/magento/package-source
           cd /tmp/magento
           composer config repositories.local-source path package-source/

@@ -11,6 +11,15 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v4
 
+      - name: Detecting unit tests
+        run: |
+          test -d $GITHUB_WORKSPACE/Test/Unit || exit 0
+
+      - name: Setting up module variables
+        run: |
+          echo COMPOSER_NAME=`jq -e '.name' composer.json -r` >> $GITHUB_ENV
+          echo MAGENTO_MODULE=`jq -e '.module_name' MODULE.json -r` >> $GITHUB_ENV
+
       - name: Configure GitLab
         run: |
           test -n "${{ secrets.GITLAB_TOKEN }}" || exit 0
@@ -22,7 +31,6 @@ jobs:
 
       - name: Add module source
         run: |
-          export COMPOSER_NAME=`cat .module.ini | grep COMPOSER_NAME | cut -f2 -d= | tr -d '"'`
           test -z "$COMPOSER_NAME}" && (echo "No composer name found" && exit 1)
           cp -R $GITHUB_WORKSPACE /tmp/magento/package-source
           cd /tmp/magento
@@ -31,8 +39,6 @@ jobs:
 
       - name: Run Magento 2 Unit Tests
         run: |
-          test -d $GITHUB_WORKSPACE/Test/Unit || exit 0
-          export COMPOSER_NAME=`cat .module.ini | grep COMPOSER_NAME | cut -f2 -d= | tr -d '"'`
           cd /tmp/magento/dev/tests/unit/
           php -d memory_limit=4G ../../../vendor/bin/phpunit -c phpunit.xml.dist ../../../vendor/$COMPOSER_NAME/Test/Unit
- 
+
