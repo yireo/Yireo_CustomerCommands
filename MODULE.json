@@ -1,4 +1,7 @@
 {
+    "skip_magento": [
+        "2.4.5-p14"
+    ],
     "sequence": [
         "Magento_Customer",
         "Magento_Directory"

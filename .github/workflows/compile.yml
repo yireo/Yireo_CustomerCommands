@@ -17,7 +17,8 @@ jobs:
       - name: Check Magento version
         run: |
           source ${GITHUB_WORKSPACE}/.module.ini
-          grep -q SKIP_MAGENTO_VERSIONS .module.ini && [[ " ${SKIP_MAGENTO_VERSIONS[*]} " == *" $MAGENTO_VERSION "* ]] 
+          grep -q SKIP_MAGENTO_VERSIONS .module.ini && [[ " ${SKIP_MAGENTO_VERSIONS[*]} " == *" ${{ matrix.magento_version }} "* ]] && exit 0
+          test -f MODULE.json && jq -e --arg v "${{ matrix.magento_version }}" '.skip_magento[] == $v' MODULE.json && exit 0
 
       - name: Configure Yireo GitLab
         run: |
