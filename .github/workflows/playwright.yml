@@ -72,6 +72,7 @@ jobs:
           fetch-depth: 1
 
       - name: Detecting Magento Playwright tests
+        run: |
           cd "$GITHUB_WORKSPACE"
           test -d $GITHUB_WORKSPACE/Test/Playwright || exit 0
 
