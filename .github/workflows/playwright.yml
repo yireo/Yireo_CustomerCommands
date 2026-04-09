@@ -71,11 +71,23 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Detecting Magento Playwright tests
+          cd "$GITHUB_WORKSPACE"
+          test -d $GITHUB_WORKSPACE/Test/Playwright || exit 0
+
+      - name: Configure Yireo GitLab
+        run: |
+          test -n "${{ secrets.GITLAB_TOKEN }}" || exit 0
+          cd /tmp/magento
+          composer config gitlab-domains gitlab.yireo.com
+          composer config --global --auth http-basic.gitlab.yireo.com yireo "${GITLAB_TOKEN}"
+          composer config repositories.loki-third-party composer https://gitlab.yireo.com/api/v4/group/loki-third-party/-/packages/composer/packages.json
+          composer config repositories.loki-checkout composer https://gitlab.yireo.com/api/v4/group/loki-checkout/-/packages/composer/packages.json
+
       - name: Run Magento Playwright setup and tests
         shell: bash
         run: |
           cd "$GITHUB_WORKSPACE"
-          test -d $GITHUB_WORKSPACE/Test/Playwright || exit 0
           source .module.ini
 
           cd /tmp/magento
@@ -83,10 +95,6 @@ jobs:
           test -f "$GITHUB_WORKSPACE/.github/workflows/composer-additional.sh" && source "$GITHUB_WORKSPACE/.github/workflows/composer-additional.sh"
           test -f "$GITHUB_WORKSPACE/.github/workflows/composer-${MAGENTO_VERSION}.sh" && source "$GITHUB_WORKSPACE/.github/workflows/composer-${MAGENTO_VERSION}.sh"
 
-          composer config gitlab-domains gitlab.yireo.com
-          composer config --global --auth http-basic.gitlab.yireo.com yireo "${GITLAB_TOKEN}"
-          composer config repositories.loki-third-party composer https://gitlab.yireo.com/api/v4/group/loki-third-party/-/packages/composer/packages.json
-          composer config repositories.loki-checkout composer https://gitlab.yireo.com/api/v4/group/loki-checkout/-/packages/composer/packages.json
           composer config repositories.local-source path "$GITHUB_WORKSPACE"
           composer require --prefer-source -- "${COMPOSER_NAME}:@dev" loki-checkout/magento2-functional-tests:@dev yireo/magento2-enable-module-sequence
 
