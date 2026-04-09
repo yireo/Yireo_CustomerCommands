@@ -16,18 +16,21 @@ jobs:
 
       - name: Testing for MODULE.json file
         run: |
-          test -f MODULE.json || exit 0
+          test -f MODULE.json || echo "SKIP_JOB=true" >> $GITHUB_ENV
 
       - name: Check Magento version
+        if: env.SKIP_JOB != 'true'
         run: |
-          jq -e --arg v "${{ matrix.magento_version }}" '.skip_magento_versions[] == $v' MODULE.json && exit 0
+          jq -e --arg v "${{ matrix.magento_version }}" '.skip_magento_versions[] == $v' MODULE.json && echo "SKIP_JOB=true" >> $GITHUB_ENV
 
       - name: Setting up module variables
+        if: env.SKIP_JOB != 'true'
         run: |
           echo COMPOSER_NAME=`jq -e '.name' composer.json -r` >> $GITHUB_ENV
           echo MAGENTO_MODULE=`jq -e '.module_name' MODULE.json -r` >> $GITHUB_ENV
 
       - name: Configure Yireo GitLab
+        if: env.SKIP_JOB != 'true'
         run: |
           test -n "${{ secrets.GITLAB_TOKEN }}" || exit 0
           cd /tmp/magento
@@ -40,6 +43,7 @@ jobs:
           composer config repositories.loki-checkout composer https://gitlab.yireo.com/api/v4/group/loki-checkout/-/packages/composer/packages.json
 
       - name: Add module source
+        if: env.SKIP_JOB != 'true'
         run: |
           cp -R ${GITHUB_WORKSPACE} /tmp/magento/package-source
           cd /tmp/magento
@@ -47,6 +51,7 @@ jobs:
           composer require --prefer-source ${COMPOSER_NAME}:@dev
 
       - name: Run Magento 2 compilation
+        if: env.SKIP_JOB != 'true'
         run: |
           cd /tmp/magento
           bin/magento module:enable --all
