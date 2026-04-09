@@ -18,8 +18,8 @@ jobs:
       - name: Setting up module variables
         if: env.SKIP_JOB != 'true'
         run: |
-          echo COMPOSER_NAME=`jq -e '.name' $GITHUB_WORKSPACE/composer.json -r` >> $GITHUB_ENV
-          echo MAGENTO_MODULE=`jq -e '.module_name' $GITHUB_WORKSPACE/MODULE.json -r` >> $GITHUB_ENV
+          echo COMPOSER_NAME=`jq '.name' $GITHUB_WORKSPACE/composer.json -r` >> $GITHUB_ENV
+          echo MAGENTO_MODULE=`jq '.module_name' $GITHUB_WORKSPACE/MODULE.json -r` >> $GITHUB_ENV
 
       - name: Configure GitLab
         if: env.SKIP_JOB != 'true'

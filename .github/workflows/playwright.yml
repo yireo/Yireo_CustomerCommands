@@ -77,8 +77,8 @@ jobs:
 
       - name: Setting up module variables
         run: |
-          echo COMPOSER_NAME=`jq -e '.name' composer.json -r` >> $GITHUB_ENV
-          echo MAGENTO_MODULE=`jq -e '.module_name' MODULE.json -r` >> $GITHUB_ENV
+          echo COMPOSER_NAME=`jq '.name' composer.json -r` >> $GITHUB_ENV
+          echo MAGENTO_MODULE=`jq '.module_name' MODULE.json -r` >> $GITHUB_ENV
 
       - name: Configure Yireo GitLab
         run: |
