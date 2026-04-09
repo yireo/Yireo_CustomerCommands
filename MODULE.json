@@ -1,5 +1,12 @@
 {
-    "skip_magento": [
+    "module_name": "Yireo_CustomerCommands",
+    "composer_name": "yireo/magento2-customer-commands",
+    "php_versions": [
+        "8.3",
+        "8.4"
+    ],
+    "skip_css_utils": false,
+    "skip_magento_versions": [
         "2.4.5-p14"
     ],
     "sequence": [
