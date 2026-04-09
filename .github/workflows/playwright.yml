@@ -75,6 +75,7 @@ jobs:
         shell: bash
         run: |
           cd "$GITHUB_WORKSPACE"
+          test -d $GITHUB_WORKSPACE/Test/Playwright || exit 0
           source .module.ini
 
           cd /tmp/magento
