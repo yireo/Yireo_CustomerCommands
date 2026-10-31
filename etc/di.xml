@@ -10,4 +10,31 @@
             </argument>
         </arguments>
     </type>
+
+    <type name="Yireo\CustomerCommands\Console\Command\ListAddressesCommand">
+        <arguments>
+            <argument name="customerRepository" xsi:type="object">Magento\Customer\Api\CustomerRepositoryInterface\Proxy</argument>
+            <argument name="addressRepository" xsi:type="object">Magento\Customer\Api\AddressRepositoryInterface\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Yireo\CustomerCommands\Console\Command\RemoveAddressCommand">
+        <arguments>
+            <argument name="addressRepository" xsi:type="object">Magento\Customer\Api\AddressRepositoryInterface\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Yireo\CustomerCommands\Console\Command\RemoveAllAddressesCommand">
+        <arguments>
+            <argument name="customerRepository" xsi:type="object">Magento\Customer\Api\CustomerRepositoryInterface\Proxy</argument>
+            <argument name="addressRepository" xsi:type="object">Magento\Customer\Api\AddressRepositoryInterface\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Yireo\CustomerCommands\Console\Command\AddAddressCommand">
+        <arguments>
+            <argument name="customerRepository" xsi:type="object">Magento\Customer\Api\CustomerRepositoryInterface\Proxy</argument>
+            <argument name="addressRepository" xsi:type="object">Magento\Customer\Api\AddressRepositoryInterface\Proxy</argument>
+        </arguments>
+    </type>
 </config>
