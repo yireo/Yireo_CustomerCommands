@@ -7,6 +7,7 @@ use Magento\Customer\Api\AddressRepositoryInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\State;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -47,15 +48,19 @@ class RemoveAllAddressesCommand extends Command
             return Command::FAILURE;
         }
 
-        $customer = null;
-        if ($customerId > 0) {
-            $customer = $this->customerRepository->getById($customerId);
-        }
-
         $this->state->setAreaCode('frontend');
 
-        if (!empty($customerEmail)) {
-            $customer = $this->customerRepository->get($customerEmail);
+        $customer = null;
+        try {
+            if ($customerId > 0) {
+                $customer = $this->customerRepository->getById($customerId);
+            }
+
+            if (!empty($customerEmail)) {
+                $customer = $this->customerRepository->get($customerEmail);
+            }
+        } catch (NoSuchEntityException $e) {
+            $customer = null;
         }
 
         if (empty($customer)) {
@@ -68,7 +73,7 @@ class RemoveAllAddressesCommand extends Command
         $addresses = $this->addressRepository->getList($searchCriteria)->getItems();
 
         if (empty($addresses)) {
-            $output->writeln(sprintf('<info>No addresses found for customer ID %s.</info>', $customerId));
+            $output->writeln(sprintf('<info>No addresses found for customer ID %s.</info>', $customer->getId()));
             return Command::SUCCESS;
         }
 
@@ -82,7 +87,7 @@ class RemoveAllAddressesCommand extends Command
             }
         }
 
-        $output->writeln(sprintf('<info>Successfully removed %d address(es) for customer ID %s.</info>', $count, $customerId));
+        $output->writeln(sprintf('<info>Successfully removed %d address(es) for customer ID %s.</info>', $count, $customer->getId()));
 
         return Command::SUCCESS;
     }

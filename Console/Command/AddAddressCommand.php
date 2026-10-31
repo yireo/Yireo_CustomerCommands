@@ -7,6 +7,7 @@ use Magento\Customer\Api\AddressRepositoryInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Api\Data\AddressInterfaceFactory;
 use Magento\Framework\App\State;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -41,8 +42,8 @@ class AddAddressCommand extends Command
         $this->addOption('country', null, InputOption::VALUE_OPTIONAL, 'Country ID');
         $this->addOption('telephone', null, InputOption::VALUE_OPTIONAL, 'Telephone');
         $this->addOption('company', null, InputOption::VALUE_OPTIONAL, 'Company');
-        $this->addOption('default-billing', null, InputOption::VALUE_OPTIONAL, 'Default Billing');
-        $this->addOption('default-shipping', null, InputOption::VALUE_OPTIONAL, 'Default Shipping');
+        $this->addOption('default-billing', null, InputOption::VALUE_OPTIONAL, 'Default Billing', false);
+        $this->addOption('default-shipping', null, InputOption::VALUE_OPTIONAL, 'Default Shipping', false);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -54,21 +55,25 @@ class AddAddressCommand extends Command
             return Command::FAILURE;
         }
 
-        $customer = null;
-        if ($customerId > 0) {
-            $customer = $this->customerRepository->getById($customerId);
-        }
+        $this->state->setAreaCode('frontend');
 
-        if (!empty($customerEmail)) {
-            $customer = $this->customerRepository->get($customerEmail);
+        $customer = null;
+        try {
+            if ($customerId > 0) {
+                $customer = $this->customerRepository->getById($customerId);
+            }
+
+            if (!empty($customerEmail)) {
+                $customer = $this->customerRepository->get($customerEmail);
+            }
+        } catch (NoSuchEntityException $e) {
+            $customer = null;
         }
 
         if (empty($customer)) {
             $output->writeln('<error>Unable to load customer</error>');
             return Command::FAILURE;
         }
-
-        $this->state->setAreaCode('frontend');
 
         try {
             $address = $this->addressFactory->create();
@@ -82,21 +87,22 @@ class AddAddressCommand extends Command
             $address->setTelephone($input->getOption('telephone'));
             $address->setCompany($input->getOption('company'));
 
-            $region = $input->getOption('region');
+            $region = (string)$input->getOption('region');
+            $countryId = (string)$input->getOption('country');
             if (is_numeric($region)) {
-                $address->setRegionId($region);
-            } else {
-                $regionId = $this->getRegionId($input->getOption('country'), $region);
+                $address->setRegionId((int)$region);
+            } elseif ($region !== '' && $countryId !== '') {
+                $regionId = $this->getRegionId($countryId, $region);
                 if ($regionId > 0) {
                     $address->setRegionId($regionId);
                 }
             }
 
-            if ($input->hasOption('default-shipping')) {
+            if ($input->getOption('default-shipping') !== false) {
                 $address->setIsDefaultShipping(true);
             }
 
-            if ($input->hasOption('default-billing')) {
+            if ($input->getOption('default-billing') !== false) {
                 $address->setIsDefaultBilling(true);
             }
 

@@ -6,6 +6,8 @@ namespace Yireo\CustomerCommands\Console\Command;
 use Magento\Customer\Api\AddressRepositoryInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\App\State;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
@@ -19,6 +21,7 @@ class ListAddressesCommand extends Command
         private CustomerRepositoryInterface $customerRepository,
         private AddressRepositoryInterface $addressRepository,
         private SearchCriteriaBuilder $searchCriteriaBuilder,
+        private readonly State $state,
         ?string $name = null
     ) {
         parent::__construct($name);
@@ -47,13 +50,19 @@ class ListAddressesCommand extends Command
             return Command::FAILURE;
         }
 
-        $customer = null;
-        if ($customerId > 0) {
-            $customer = $this->customerRepository->getById($customerId);
-        }
+        $this->state->setAreaCode('frontend');
 
-        if (!empty($customerEmail)) {
-            $customer = $this->customerRepository->get($customerEmail);
+        $customer = null;
+        try {
+            if ($customerId > 0) {
+                $customer = $this->customerRepository->getById($customerId);
+            }
+
+            if (!empty($customerEmail)) {
+                $customer = $this->customerRepository->get($customerEmail);
+            }
+        } catch (NoSuchEntityException $e) {
+            $customer = null;
         }
 
         if (empty($customer)) {
