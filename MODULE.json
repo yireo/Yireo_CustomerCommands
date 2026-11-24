@@ -12,7 +12,8 @@
     ],
     "sequence": [
         "Magento_Customer",
-        "Magento_Directory"
+        "Magento_Directory",
+        "Magento_Store"
     ],
     "modules": [
         "Magento_Customer",
