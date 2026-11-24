@@ -74,13 +74,13 @@ export function addAddress(email: string, address: AddressOptions, flags: string
 }
 
 export function removeAddress(addressId: number) {
-    const result = runMagento(['customer:address:remove', String(addressId)]);
+    const result = runMagento(['customer:address:remove', String(addressId), '--force']);
     expect(result.status, result.output).toBe(0);
     expect(result.output).toContain(`Address with ID ${addressId} has been removed.`);
 }
 
 export function removeAllAddresses(email: string): string {
-    const result = runMagento(['customer:address:remove-all', '--customer_email=' + email]);
+    const result = runMagento(['customer:address:remove-all', '--customer_email=' + email, '--force']);
     expect(result.status, result.output).toBe(0);
 
     return result.output;
