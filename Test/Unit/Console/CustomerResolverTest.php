@@ -31,7 +31,7 @@ final class CustomerResolverTest extends TestCase
     public function testAddsOptions(): void
     {
         $command = new Command('test');
-        CustomerResolver::addOptions($command);
+        $this->createResolver()->addOptions($command);
 
         $definition = $command->getDefinition();
         $this->assertTrue($definition->hasOption('customer_id'));
@@ -184,7 +184,7 @@ final class CustomerResolverTest extends TestCase
     private function createInput(array $parameters): ArrayInput
     {
         $command = new Command('test');
-        CustomerResolver::addOptions($command);
+        $this->createResolver()->addOptions($command);
 
         return new ArrayInput($parameters, new InputDefinition($command->getDefinition()->getOptions()));
     }

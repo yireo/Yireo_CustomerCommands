@@ -22,7 +22,7 @@ trait CustomerAddressTrait
     /**
      * @param class-string $commandClass
      * @param array<string, mixed> $input
-     * @param string[] $answers
+     * @param list<string> $answers
      */
     private function runCommand(string $commandClass, array $input, array $answers = []): CommandTester
     {

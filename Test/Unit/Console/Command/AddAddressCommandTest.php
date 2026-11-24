@@ -465,7 +465,7 @@ final class AddAddressCommandTest extends TestCase
     private function setRegionCollections(array $collections): void
     {
         $this->regionCollectionFactory->expects($this->exactly(count($collections)))->method('create')
-            ->willReturnOnConsecutiveCalls(...$collections);
+            ->willReturnOnConsecutiveCalls(...array_values($collections));
     }
 
     private function setAddressFactory(): void

@@ -34,8 +34,8 @@ class RemoveAddressCommand extends Command
         $this->setName('customer:address:remove');
         $this->setDescription('Remove a customer address by ID');
         $this->addArgument('address_id', InputArgument::REQUIRED, 'Address ID');
-        CustomerResolver::addOptions($this);
-        RemovalConfirmation::addOption($this);
+        $this->customerResolver->addOptions($this);
+        $this->removalConfirmation->addOption($this);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

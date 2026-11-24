@@ -20,7 +20,7 @@ class CustomerResolver
     ) {
     }
 
-    public static function addOptions(Command $command): void
+    public function addOptions(Command $command): void
     {
         $command->addOption('customer_id', null, InputOption::VALUE_REQUIRED, 'Customer ID');
         $command->addOption('customer_email', null, InputOption::VALUE_REQUIRED, 'Customer email');

@@ -12,7 +12,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 class RemovalConfirmation
 {
-    public static function addOption(Command $command): void
+    public function addOption(Command $command): void
     {
         $command->addOption('force', 'f', InputOption::VALUE_NONE, 'Remove without asking for confirmation');
     }

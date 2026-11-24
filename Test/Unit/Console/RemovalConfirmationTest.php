@@ -57,7 +57,7 @@ final class RemovalConfirmationTest extends TestCase
 
             protected function configure(): void
             {
-                RemovalConfirmation::addOption($this);
+                $this->confirmation->addOption($this);
             }
 
             protected function execute(InputInterface $input, OutputInterface $output): int

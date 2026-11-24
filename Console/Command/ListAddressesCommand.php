@@ -32,7 +32,7 @@ class ListAddressesCommand extends Command
     {
         $this->setName('customer:address:list');
         $this->setDescription('List addresses of a customer');
-        CustomerResolver::addOptions($this);
+        $this->customerResolver->addOptions($this);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

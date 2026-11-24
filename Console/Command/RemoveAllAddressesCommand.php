@@ -34,8 +34,8 @@ class RemoveAllAddressesCommand extends Command
     {
         $this->setName('customer:address:remove-all');
         $this->setDescription('Remove all addresses of a specific customer');
-        CustomerResolver::addOptions($this);
-        RemovalConfirmation::addOption($this);
+        $this->customerResolver->addOptions($this);
+        $this->removalConfirmation->addOption($this);
         $this->addOption('dry-run', null, InputOption::VALUE_NONE, 'Only show which addresses would be removed');
     }
 

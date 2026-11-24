@@ -39,7 +39,7 @@ class AddAddressCommand extends Command
     {
         $this->setName('customer:address:add');
         $this->setDescription('Add a new address to a customer');
-        CustomerResolver::addOptions($this);
+        $this->customerResolver->addOptions($this);
         $this->addOption('firstname', null, InputOption::VALUE_REQUIRED, 'First Name');
         $this->addOption('lastname', null, InputOption::VALUE_REQUIRED, 'Last Name');
         $this->addOption('street', null, InputOption::VALUE_REQUIRED, 'Street');
