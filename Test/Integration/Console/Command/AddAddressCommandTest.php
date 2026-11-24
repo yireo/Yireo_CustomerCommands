@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Yireo\CustomerCommands\Test\Integration\Console\Command;
 
 use Magento\Customer\Test\Fixture\Customer;
+use Magento\Directory\Model\ResourceModel\Region\CollectionFactory as RegionCollectionFactory;
 use Magento\TestFramework\Fixture\DataFixture;
+use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Yireo\CustomerCommands\Console\Command\AddAddressCommand;
@@ -126,6 +128,92 @@ final class AddAddressCommandTest extends TestCase
         $this->assertSame(Command::FAILURE, $commandTester->getStatusCode());
         $this->assertStringContainsString('Error saving address:', $commandTester->getDisplay());
         $this->assertCount(0, $this->getAddresses((int)$customer->getId()));
+    }
+
+    #[DataFixture(Customer::class, as: 'customer')]
+    public function testRejectsRegionIdOfOtherCountry(): void
+    {
+        $customer = $this->getFixtureCustomer();
+        $texasRegionId = (int)Bootstrap::getObjectManager()->create(RegionCollectionFactory::class)->create()
+            ->addFieldToFilter('country_id', ['eq' => 'US'])
+            ->addFieldToFilter('code', ['eq' => 'TX'])
+            ->getFirstItem()->getId();
+        $this->assertGreaterThan(0, $texasRegionId);
+
+        $commandTester = $this->runCommand(AddAddressCommand::class, $this->getDutchAddressInput([
+            '--customer_id' => (string)$customer->getId(),
+            '--country' => 'DE',
+            '--region' => (string)$texasRegionId,
+        ]));
+
+        $this->assertSame(Command::FAILURE, $commandTester->getStatusCode());
+        $this->assertStringContainsString(
+            sprintf('Region ID %d does not exist for country DE', $texasRegionId),
+            $commandTester->getDisplay()
+        );
+        $this->assertCount(0, $this->getAddresses((int)$customer->getId()));
+    }
+
+    #[DataFixture(Customer::class, as: 'customer')]
+    public function testRejectsUnknownRegionNameForCountryWithRegions(): void
+    {
+        $customer = $this->getFixtureCustomer();
+
+        $commandTester = $this->runCommand(AddAddressCommand::class, $this->getDutchAddressInput([
+            '--customer_id' => (string)$customer->getId(),
+            '--country' => 'US',
+            '--region' => 'Atlantis',
+        ]));
+
+        $this->assertSame(Command::FAILURE, $commandTester->getStatusCode());
+        $this->assertStringContainsString('Unknown region "Atlantis" for country US', $commandTester->getDisplay());
+        $this->assertCount(0, $this->getAddresses((int)$customer->getId()));
+    }
+
+    #[DataFixture(Customer::class, as: 'customer')]
+    public function testKeepsRegionNameAsTextForCountryWithoutRegions(): void
+    {
+        $customer = $this->getFixtureCustomer();
+
+        $commandTester = $this->runCommand(AddAddressCommand::class, $this->getDutchAddressInput([
+            '--customer_id' => (string)$customer->getId(),
+            '--region' => 'Utrecht',
+        ]));
+
+        $this->assertSame(Command::SUCCESS, $commandTester->getStatusCode(), $commandTester->getDisplay());
+        $addresses = $this->getAddresses((int)$customer->getId());
+        $this->assertCount(1, $addresses);
+        $this->assertSame('Utrecht', $addresses[0]->getRegion()->getRegion());
+        $this->assertEmpty($addresses[0]->getRegionId());
+    }
+
+    #[DataFixture(Customer::class, as: 'customer')]
+    public function testRejectsInvalidCountryId(): void
+    {
+        $customer = $this->getFixtureCustomer();
+
+        $commandTester = $this->runCommand(AddAddressCommand::class, $this->getDutchAddressInput([
+            '--customer_id' => (string)$customer->getId(),
+            '--country' => 'Netherlands',
+        ]));
+
+        $this->assertSame(Command::FAILURE, $commandTester->getStatusCode());
+        $this->assertStringContainsString('Invalid country ID', $commandTester->getDisplay());
+        $this->assertCount(0, $this->getAddresses((int)$customer->getId()));
+    }
+
+    #[DataFixture(Customer::class, as: 'customer')]
+    public function testAddsAddressByEmailInWebsite(): void
+    {
+        $customer = $this->getFixtureCustomer();
+
+        $commandTester = $this->runCommand(AddAddressCommand::class, $this->getDutchAddressInput([
+            '--customer_email' => $customer->getEmail(),
+            '--website' => 'base',
+        ]));
+
+        $this->assertSame(Command::SUCCESS, $commandTester->getStatusCode(), $commandTester->getDisplay());
+        $this->assertCount(1, $this->getAddresses((int)$customer->getId()));
     }
 
     public function testFailsForUnknownCustomer(): void

@@ -14,6 +14,7 @@ use Yireo\CustomerCommands\Console\Command\AddAddressCommand;
 use Yireo\CustomerCommands\Console\Command\ListAddressesCommand;
 use Yireo\CustomerCommands\Console\Command\RemoveAddressCommand;
 use Yireo\CustomerCommands\Console\Command\RemoveAllAddressesCommand;
+use Yireo\CustomerCommands\Console\CustomerResolver;
 
 final class CommandListTest extends TestCase
 {
@@ -45,14 +46,14 @@ final class CommandListTest extends TestCase
     {
         $customerRepositoryProxy = 'Magento\\Customer\\Api\\CustomerRepositoryInterface\\Proxy';
         $addressRepositoryProxy = 'Magento\\Customer\\Api\\AddressRepositoryInterface\\Proxy';
+        $storeManagerProxy = 'Magento\\Store\\Model\\StoreManagerInterface\\Proxy';
 
         return [
-            'list customer' => [ListAddressesCommand::class, 'customerRepository', $customerRepositoryProxy],
+            'resolver customer' => [CustomerResolver::class, 'customerRepository', $customerRepositoryProxy],
+            'resolver store' => [CustomerResolver::class, 'storeManager', $storeManagerProxy],
             'list address' => [ListAddressesCommand::class, 'addressRepository', $addressRepositoryProxy],
-            'add customer' => [AddAddressCommand::class, 'customerRepository', $customerRepositoryProxy],
             'add address' => [AddAddressCommand::class, 'addressRepository', $addressRepositoryProxy],
             'remove address' => [RemoveAddressCommand::class, 'addressRepository', $addressRepositoryProxy],
-            'remove-all customer' => [RemoveAllAddressesCommand::class, 'customerRepository', $customerRepositoryProxy],
             'remove-all address' => [RemoveAllAddressesCommand::class, 'addressRepository', $addressRepositoryProxy],
         ];
     }

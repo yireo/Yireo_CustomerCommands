@@ -13,11 +13,14 @@ use Magento\Framework\Api\SearchCriteria;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\State;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use Yireo\CustomerCommands\Console\Command\ListAddressesCommand;
+use Yireo\CustomerCommands\Console\CustomerResolver;
+use Yireo\CustomerCommands\Console\OutputSanitizer;
 
 final class ListAddressesCommandTest extends TestCase
 {
@@ -25,6 +28,7 @@ final class ListAddressesCommandTest extends TestCase
     private AddressRepositoryInterface&MockObject $addressRepository;
     private SearchCriteriaBuilder&MockObject $searchCriteriaBuilder;
     private State&MockObject $state;
+    private ?string $areaCode = null;
 
     protected function setUp(): void
     {
@@ -33,6 +37,14 @@ final class ListAddressesCommandTest extends TestCase
         $this->searchCriteriaBuilder = $this->createMock(SearchCriteriaBuilder::class);
         $this->state = $this->createMock(State::class);
         $this->searchCriteriaBuilder->method('create')->willReturn($this->createStub(SearchCriteria::class));
+        $this->areaCode = null;
+        $this->state->method('emulateAreaCode')
+            ->willReturnCallback(function (string $areaCode, callable $callback) {
+                $this->areaCode = $areaCode;
+                $result = $callback();
+                $this->areaCode = null;
+                return $result;
+            });
     }
 
     public function testCommandName(): void
@@ -70,9 +82,31 @@ final class ListAddressesCommandTest extends TestCase
         $this->assertStringContainsString('Unable to load customer', $commandTester->getDisplay());
     }
 
+    public function testRejectsCustomerIdWithTrailingCharacters(): void
+    {
+        $this->customerRepository->expects($this->never())->method('getById');
+
+        $commandTester = $this->createCommandTester();
+
+        $this->assertSame(Command::FAILURE, $commandTester->execute(['--customer_id' => '1abc']));
+        $this->assertStringContainsString('Invalid customer ID "1abc"', $commandTester->getDisplay());
+    }
+
+    public function testRejectsBothCustomerIdAndEmail(): void
+    {
+        $this->customerRepository->expects($this->never())->method('getById');
+        $this->customerRepository->expects($this->never())->method('get');
+
+        $commandTester = $this->createCommandTester();
+        $statusCode = $commandTester->execute(['--customer_id' => '1', '--customer_email' => 'jane@example.com']);
+
+        $this->assertSame(Command::FAILURE, $statusCode);
+        $this->assertStringContainsString('not both', $commandTester->getDisplay());
+    }
+
     public function testLoadsCustomerById(): void
     {
-        $this->customerRepository->expects($this->once())->method('getById')->with('42')
+        $this->customerRepository->expects($this->once())->method('getById')->with(42)
             ->willReturn($this->createCustomer(42));
         $this->customerRepository->expects($this->never())->method('get');
         $this->searchCriteriaBuilder->expects($this->once())->method('addFilter')->with('parent_id', 42);
@@ -97,16 +131,6 @@ final class ListAddressesCommandTest extends TestCase
         );
     }
 
-    public function testEmailWinsOverCustomerId(): void
-    {
-        $this->customerRepository->method('getById')->willReturn($this->createCustomer(1));
-        $this->customerRepository->method('get')->willReturn($this->createCustomer(2));
-        $this->searchCriteriaBuilder->expects($this->once())->method('addFilter')->with('parent_id', 2);
-        $this->setAddresses([]);
-
-        $this->createCommandTester()->execute(['--customer_id' => '1', '--customer_email' => 'jane@example.com']);
-    }
-
     public function testRendersAddressTable(): void
     {
         $this->customerRepository->method('getById')->willReturn($this->createCustomer(42));
@@ -124,29 +148,42 @@ final class ListAddressesCommandTest extends TestCase
         $this->assertMatchesRegularExpression('/\|\s*12\s*\|.*Dorpsstraat 5\s*\|\s*Utrecht\s*\|\s*3511 AA\s*\|\s*NL\s*\|/', $display);
     }
 
-    public function testSetsAreaCodeBeforeLoadingCustomer(): void
+    public function testEscapesMarkupAndControlCharactersInAddressData(): void
     {
-        $areaCode = null;
-        $this->state->expects($this->once())->method('setAreaCode')->with('frontend')
-            ->willReturnCallback(function (string $code) use (&$areaCode) {
-                $areaCode = $code;
-            });
+        $this->customerRepository->method('getById')->willReturn($this->createCustomer(42));
+        $this->setAddresses([
+            $this->createAddress(11, ["<href=https://evil.test>Click</>\x1b[2J"], "<error>Fake</error>", '1234', 'NL'),
+        ]);
+
+        $commandTester = $this->createCommandTester();
+        $commandTester->execute(['--customer_id' => '42'], ['decorated' => true]);
+
+        $display = $commandTester->getDisplay();
+        $this->assertStringContainsString('<href=https://evil.test>Click</>', $display);
+        $this->assertStringContainsString('<error>Fake</error>', $display);
+        $this->assertStringNotContainsString("\x1b[2J", $display);
+        $this->assertStringNotContainsString("\x1b]8;", $display);
+    }
+
+    public function testRunsInAdminhtmlArea(): void
+    {
         $this->customerRepository->method('getById')
-            ->willReturnCallback(function () use (&$areaCode) {
-                $this->assertSame('frontend', $areaCode, 'Area code must be set before loading the customer');
+            ->willReturnCallback(function () {
+                $this->assertSame('adminhtml', $this->areaCode, 'Customer must be loaded within the emulated area');
                 return $this->createCustomer(42);
             });
         $this->setAddresses([]);
 
-        $this->createCommandTester()->execute(['--customer_id' => '42']);
+        $this->assertSame(Command::SUCCESS, $this->createCommandTester()->execute(['--customer_id' => '42']));
     }
 
     private function createCommand(): ListAddressesCommand
     {
         return new ListAddressesCommand(
-            $this->customerRepository,
             $this->addressRepository,
             $this->searchCriteriaBuilder,
+            new CustomerResolver($this->customerRepository, $this->createStub(StoreManagerInterface::class)),
+            new OutputSanitizer(),
             $this->state
         );
     }

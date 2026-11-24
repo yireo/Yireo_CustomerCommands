@@ -11,6 +11,7 @@ use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Customer\Model\AddressRegistry;
 use Magento\Customer\Model\CustomerRegistry;
 use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\TestFramework\Fixture\DataFixtureStorageManager;
 use Magento\TestFramework\Helper\Bootstrap;
@@ -21,12 +22,14 @@ trait CustomerAddressTrait
     /**
      * @param class-string $commandClass
      * @param array<string, mixed> $input
+     * @param string[] $answers
      */
-    private function runCommand(string $commandClass, array $input): CommandTester
+    private function runCommand(string $commandClass, array $input, array $answers = []): CommandTester
     {
         $command = Bootstrap::getObjectManager()->create($commandClass);
         $commandTester = new CommandTester($command);
-        $commandTester->execute($input);
+        $commandTester->setInputs($answers);
+        $commandTester->execute($input, ['interactive' => $answers !== []]);
 
         return $commandTester;
     }
@@ -66,6 +69,20 @@ trait CustomerAddressTrait
         } catch (NoSuchEntityException $e) {
             return false;
         }
+    }
+
+    /**
+     * @param array<string, string> $data
+     */
+    private function updateAddressInDatabase(int $addressId, array $data): void
+    {
+        $resourceConnection = Bootstrap::getObjectManager()->get(ResourceConnection::class);
+        $resourceConnection->getConnection()->update(
+            $resourceConnection->getTableName('customer_address_entity'),
+            $data,
+            ['entity_id = ?' => $addressId]
+        );
+        Bootstrap::getObjectManager()->get(AddressRegistry::class)->remove($addressId);
     }
 
     private function getCustomerRepository(): CustomerRepositoryInterface
