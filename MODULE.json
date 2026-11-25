@@ -16,30 +16,20 @@
         "Magento_Store"
     ],
     "modules": [
+        "Magento_Csp",
         "Magento_Customer",
         "Magento_Directory",
         "Magento_Eav",
         "Magento_Store",
-        "Magento_Customer",
-        "Magento_Directory",
-        "Magento_Eav",
-        "Magento_Store",
-        "Magento_Customer",
-        "Magento_Directory",
-        "Magento_Eav",
-        "Magento_Store",
-        "Magento_Customer",
-        "Magento_Directory",
-        "Magento_Eav",
-        "Magento_Store",
-        "Magento_Customer",
-        "Magento_Directory",
-        "Magento_Eav",
-        "Magento_Store"
+        "Magento_Theme"
     ],
     "components": [],
     "config": [],
-    "tests": [],
+    "tests": {
+        "unit": 76,
+        "integration": 35,
+        "functional": 0
+    },
     "phpcs_severity": "7",
     "phpstan_level": "7"
 }
